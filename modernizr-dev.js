@@ -1,6 +1,28 @@
-/*! Modernizr 3.0.0-beta (Development Build) | MIT
- *  Build: http://modernizr.com/download/#-applicationcache-audio-backgroundsize-borderimage-borderradius-boxshadow-canvas-canvastext-cssanimations-csscolumns-cssgradients-cssreflections-csstransforms-csstransforms3d-csstransitions-draganddrop-flexbox-flexboxlegacy-fontface-generatedcontent-geolocation-hashchange-history-hsla-indexeddb-inlinesvg-input-inputtypes-localstorage-multiplebgs-opacity-postmessage-rgba-sessionstorage-smil-svg-svgclippaths-textshadow-video-webgl-websockets-websqldatabase-webworkers-addtest-cssclasses-domprefixes-hasevent-prefixed-prefixes-shiv-testallprops-testprop-teststyles-dontmin
+/*!
+ * modernizr v3.0.0pre
+ * Build http://v3.modernizr.com/download/#-applicationcache-audio-backgroundsize-borderimage-borderradius-boxshadow-canvas-canvastext-cssanimations-csscolumns-cssgradients-cssreflections-csstransforms-csstransforms3d-csstransitions-draganddrop-flexbox-flexboxlegacy-fontface-generatedcontent-geolocation-hashchange-history-hsla-indexeddb-inlinesvg-input-inputtypes-localstorage-multiplebgs-opacity-postmessage-rgba-sessionstorage-smil-svg-svgclippaths-textshadow-video-webgl-websockets-websqldatabase-webworkers-addtest-cssclasses-domprefixes-hasevent-prefixed-prefixes-shiv-testallprops-testprop-teststyles
+ *
+ * Copyright (c)
+ *  Faruk Ates
+ *  Paul Irish
+ *  Alex Sexton
+ *  Ryan Seddon
+ *  Alexander Farkas
+ *  Patrick Kettner
+ *  Stu Cox
+ *  Richard Herrera
+
+ * MIT License
  */
+
+/*
+ * Modernizr tests which native CSS3 and HTML5 features are available in the
+ * current UA and makes the results available to you in two ways: as properties on
+ * a global `Modernizr` object, and as classes on the `<html>` element. This
+ * information allows you to progressively enhance your pages with a granular level
+ * of control over the experience.
+*/
+
 ;(function(window, document, undefined){
 
   var classes = [];
@@ -9,14 +31,13 @@
   // Take the html5 variable out of the
   // html5shiv scope so we can return it.
   var html5;
-
   /**
-  * @preserve HTML5 Shiv prev3.7.1 | @afarkas @jdalton @jon_neal @rem | MIT/GPL2 Licensed
+  * @preserve HTML5 Shiv 3.7.2 | @afarkas @jdalton @jon_neal @rem | MIT/GPL2 Licensed
   */
   ;(function(window, document) {
   /*jshint evil:true */
     /** version */
-    var version = '3.7.0';
+    var version = '3.7.2';
 
     /** Preset options */
     var options = window.html5 || {};
@@ -94,7 +115,25 @@
       return typeof elements == 'string' ? elements.split(' ') : elements;
     }
 
-      /**
+    /**
+     * Extends the built-in list of html5 elements
+     * @memberOf html5
+     * @param {String|Array} newElements whitespace separated list or array of new element names to shiv
+     * @param {Document} ownerDocument The context document.
+     */
+    function addElements(newElements, ownerDocument) {
+      var elements = html5.elements;
+      if(typeof elements != 'string'){
+        elements = elements.join(' ');
+      }
+      if(typeof newElements != 'string'){
+        newElements = newElements.join(' ');
+      }
+      html5.elements = elements +' '+ newElements;
+      shivDocument(ownerDocument);
+    }
+
+     /**
      * Returns the data associated to the given document
      * @private
      * @param {Document} ownerDocument The document.
@@ -299,7 +338,10 @@
       createElement: createElement,
 
       //creates a shived documentFragment
-      createDocumentFragment: createDocumentFragment
+      createDocumentFragment: createDocumentFragment,
+
+      //extends list of elements
+      addElements: addElements
     };
 
     /*--------------------------------------------------------------------------*/
@@ -311,7 +353,6 @@
     shivDocument(document);
 
   }(this, document));
-
 
 
   var tests = [];
@@ -326,6 +367,7 @@
     _config: {
       classPrefix : '',
       enableClasses : true,
+      enableJSClass : true,
       usePrefixes : true
     },
 
@@ -341,8 +383,9 @@
       // synchronous tests. I would leave it out, but the code
       // to *disallow* sync tests in the real version of this
       // function is actually larger than this.
+      var self = this;
       setTimeout(function() {
-        cb(this[test]);
+        cb(self[test]);
       }, 0);
     },
 
@@ -454,11 +497,12 @@ Detects support for the History API for manipulating the browser session history
     var ua = navigator.userAgent;
 
     // We only want Android 2 and 4.0, stock browser, and not Chrome which identifies
-    // itself as 'Mobile Safari' as well
+    // itself as 'Mobile Safari' as well, nor Windows Phone (issue #1471).
     if ((ua.indexOf('Android 2.') !== -1 ||
         (ua.indexOf('Android 4.0') !== -1)) &&
         ua.indexOf('Mobile Safari') !== -1 &&
-        ua.indexOf('Chrome') === -1) {
+        ua.indexOf('Chrome') === -1 &&
+        ua.indexOf('Windows Phone') === -1) {
       return false;
     }
 
@@ -741,11 +785,13 @@ Detects support for the basic `Worker` API from the Web Workers spec. Web Worker
     var className = docElement.className;
     var classPrefix = Modernizr._config.classPrefix || '';
 
-    // Change `no-js` to `js` (we do this regardles of the `enableClasses`
+    // Change `no-js` to `js` (we do this independently of the `enableClasses`
     // option)
     // Handle classPrefix on this too
-    var reJS = new RegExp('(^|\\s)'+classPrefix+'no-js(\\s|$)');
-    className = className.replace(reJS, '$1'+classPrefix+'js$2');
+    if(Modernizr._config.enableJSClass) {
+      var reJS = new RegExp('(^|\\s)'+classPrefix+'no-js(\\s|$)');
+      className = className.replace(reJS, '$1'+classPrefix+'js$2');
+    }
 
     if(Modernizr._config.enableClasses) {
       // Add the new classes
@@ -875,7 +921,9 @@ Detects support for the basic `Worker` API from the Web Workers spec. Web Worker
       }
 
       // Set a single class (either `feature` or `no-feature`)
-      setClasses([(test ? '' : 'no-') + featureNameSplit.join('-')]);
+      /* jshint -W041 */
+      setClasses([(!!test && test != false ? '' : 'no-') + featureNameSplit.join('-')]);
+      /* jshint +W041 */
 
       // Trigger the event
       Modernizr._trigger(feature, test);
@@ -901,6 +949,47 @@ Detects support for the basic `Worker` API from the Web Workers spec. Web Worker
   }
   ;
 
+  /**
+   * atRule returns a given CSS property at-rule (eg @keyframes), possibly in
+   * some prefixed form, or false, in the case of an unsupported rule
+   *
+   * @param prop - String naming the property to test
+   */
+
+  var atRule = function(prop) {
+    var length = prefixes.length;
+    var cssrule = window.CSSRule;
+    var rule;
+
+    if (typeof cssrule === 'undefined') {
+      return false;
+    }
+
+    // remove literal @ from beginning of provided property
+    prop = prop.replace(/^@/,'');
+
+    // CSSRules use underscores instead of dashes
+    rule = prop.replace(/-/g,'_').toUpperCase() + '_RULE';
+
+    if (rule in cssrule) {
+      return '@' + prop;
+    }
+
+    for ( var i = 0; i < length; i++ ) {
+      // prefixes gives us something like -o-, and we want O_
+      var prefix = prefixes[i];
+      var thisRule = prefix.toUpperCase() + '_' + rule;
+
+      if (thisRule in cssrule) {
+        return '@-' + prefix.toLowerCase() + '-' + prop;
+      }
+    }
+
+    return false;
+  };
+
+
+
   // Following spec is to expose vendor-specific style properties as:
   //   elem.style.WebkitBorderRadius
   // and the following would be incorrect:
@@ -919,7 +1008,13 @@ Detects support for the basic `Worker` API from the Web Workers spec. Web Worker
 
 
   var createElement = function() {
-    return document.createElement.apply(document, arguments);
+    if (typeof document.createElement !== 'function') {
+      // This is the case in IE7, where the type of createElement is "object".
+      // For this reason, we cannot call apply() as Object is not a Function.
+      return document.createElement(arguments[0]);
+    } else {
+      return document.createElement.apply(document, arguments);
+    }
   };
 
 /*!
@@ -1242,10 +1337,11 @@ Detects support for inline SVG in HTML (not within XHTML).
 
   Modernizr.addTest('webgl', function() {
     var canvas = createElement('canvas');
-    if ('supportsContext' in canvas) {
-      return canvas.supportsContext('webgl') || canvas.supportsContext('experimental-webgl');
+    var supports = 'probablySupportsContext' in canvas ? 'probablySupportsContext' :  'supportsContext';
+    if (supports in canvas) {
+      return canvas[supports]('webgl') || canvas[supports]('experimental-webgl');
     }
-    return !!window.WebGLRenderingContext;
+    return 'WebGLRenderingContext' in window;
   });
 
 
@@ -1370,6 +1466,28 @@ Detects support for the `hashchange` event, fired when the current location frag
     return contains(style.backgroundColor, 'rgba') || contains(style.backgroundColor, 'hsla');
   });
 
+/*!
+{
+  "name": "CSS Supports",
+  "property": "supports",
+  "caniuse": "css-featurequeries",
+  "tags": ["css"],
+  "builderAliases": ["css_supports"],
+  "notes": [{
+    "name": "W3 Spec",
+    "href": "http://dev.w3.org/csswg/css3-conditional/#at-supports"
+  },{
+    "name": "Related Github Issue",
+    "href": "github.com/Modernizr/Modernizr/issues/648"
+  },{
+    "name": "W3 Info",
+    "href": "http://dev.w3.org/csswg/css3-conditional/#the-csssupportsrule-interface"
+  }]
+}
+!*/
+
+  Modernizr.addTest('supports', 'CSS' in window && 'supports' in window.CSS);
+
 
   var inputElem = createElement('input');
 
@@ -1472,7 +1590,7 @@ Modernizr.inputtypes.week
           // Interestingly, opera fails the earlier test, so it doesn't
           //  even make it here.
 
-        } else if ( /^(url|email)$/.test(inputElemType) ) {
+        } else if ( /^(url|email|number)$/.test(inputElemType) ) {
           // Real url and email support comes with prebaked validation.
           bool = inputElem.checkValidity && inputElem.checkValidity() === false;
 
@@ -1502,7 +1620,8 @@ Modernizr.inputtypes.week
   "notes": [{
     "name": "WHATWG spec",
     "href": "http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#input-type-attr-summary"
-  }]
+  }],
+  "knownBugs": ["Some blackberry devices report false positive for input.multiple"]
 }
 !*/
 /* DOC
@@ -1630,8 +1749,8 @@ See [this discussion](http://github.com/Modernizr/Modernizr/issues/213) regardin
     // when injected with innerHTML. To get around this you need to prepend the 'NoScope' element
     // with a 'scoped' element, in our case the soft-hyphen entity as it won't mess with our measurements.
     // msdn.microsoft.com/en-us/library/ms533897%28VS.85%29.aspx
-    // Documents served as xml will throw if using ­ so use xml friendly encoded version. See issue #277
-    style = ['­','<style id="s', mod, '">', rule, '</style>'].join('');
+    // Documents served as xml will throw if using &shy; so use xml friendly encoded version. See issue #277
+    style = ['&#173;','<style id="s', mod, '">', rule, '</style>'].join('');
     div.id = mod;
     // IE6 will false positive on some tests due to the style element inside the test div somehow interfering offsetHeight, so insert it into body or fakebody.
     // Opera will act all quirky when injecting elements in documentElement when page is served as xml, needs fakebody too. #270
@@ -1848,12 +1967,7 @@ See [this discussion](http://github.com/Modernizr/Modernizr/issues/213) regardin
   // on our modernizr element, but instead just testing undefined vs
   // empty string.
 
-  // Because the testing of the CSS property names (with "-", as
-  // opposed to the camelCase DOM properties) is non-portable and
-  // non-standard but works in WebKit and IE (but not Gecko or Opera),
-  // we explicitly reject properties with dashes so that authors
-  // developing in WebKit or IE first don't end up with
-  // browser-specific content by accident.
+  // Property names can be provided in either camelCase or kebab-case.
 
   function testProps( props, prefixed, value, skipValueTest ) {
     skipValueTest = is(skipValueTest, 'undefined') ? false : skipValueTest;
@@ -1867,7 +1981,7 @@ See [this discussion](http://github.com/Modernizr/Modernizr/issues/213) regardin
     }
 
     // Otherwise do it properly
-    var afterInit, i, prop, before;
+    var afterInit, i, propsLength, prop, before;
 
     // If we don't have a style element, that means
     // we're running async or after the core tests,
@@ -1887,11 +2001,16 @@ See [this discussion](http://github.com/Modernizr/Modernizr/issues/213) regardin
       }
     }
 
-    for ( i in props ) {
+    propsLength = props.length;
+    for ( i = 0; i < propsLength; i++ ) {
       prop = props[i];
       before = mStyle.style[prop];
 
-      if ( !contains(prop, '-') && mStyle.style[prop] !== undefined ) {
+      if (contains(prop, '-')) {
+        prop = cssToDOM(prop);
+      }
+
+      if ( mStyle.style[prop] !== undefined ) {
 
         // If value to test has been passed in, do a set-and-check test.
         // 0 (integer) is a valid property value, so check that `value` isn't
@@ -1928,7 +2047,7 @@ See [this discussion](http://github.com/Modernizr/Modernizr/issues/213) regardin
   ;
 
   // Modernizr.testProp() investigates whether a given style property is recognized
-  // Note that the property names must be provided in the camelCase variant.
+  // Property names can be provided in either camelCase or kebab-case.
   // Modernizr.testProp('pointerEvents')
   // Also accepts optional 2nd arg, of a value to use for native feature detection, e.g.:
   // Modernizr.testProp('pointerEvents', 'none')
@@ -1995,8 +2114,12 @@ See [this discussion](http://github.com/Modernizr/Modernizr/issues/213) regardin
   //     transEndEventName = transEndEventNames[ Modernizr.prefixed('transition') ];
 
   var prefixed = ModernizrProto.prefixed = function( prop, obj, elem ) {
-    // Convert kebab-case to camelCase
+    if (prop.indexOf('@') === 0) {
+      return atRule(prop);
+    }
+
     if (prop.indexOf('-') != -1) {
+      // Convert kebab-case to camelCase
       prop = cssToDOM(prop);
     }
     if (!obj) {
@@ -2043,7 +2166,8 @@ Detects support for the IndexedDB client-side storage API (final spec).
    * parameter to skip the value check when native detection isn't available,
    * to improve performance when simply testing for support of a property.
    *
-   * @param prop - String naming the property to test
+   * @param prop - String naming the property to test (either camelCase or
+   *               kebab-case)
    * @param value - [optional] String of the value to test
    * @param skipValueTest - [optional] Whether to skip testing that the value
    *                        is supported when using non-native detection
@@ -2056,19 +2180,18 @@ Detects support for the IndexedDB client-side storage API (final spec).
 
 /*!
 {
-  "name": "Border Radius",
-  "property": "borderradius",
-  "caniuse": "border-radius",
-  "polyfills": ["css3pie"],
+  "name": "Background Size",
+  "property": "backgroundsize",
   "tags": ["css"],
+  "knownBugs": ["This will false positive in Opera Mini - http://github.com/Modernizr/Modernizr/issues/396"],
   "notes": [{
-    "name": "Comprehensive Compat Chart",
-    "href": "http://muddledramblings.com/table-of-css3-border-radius-compliance"
+    "name": "Related Issue",
+    "href": "http://github.com/Modernizr/Modernizr/issues/396"
   }]
 }
 !*/
 
-  Modernizr.addTest('borderradius', testAllProps('borderRadius', '0px', true));
+  Modernizr.addTest('backgroundsize', testAllProps('backgroundSize', '100%', true));
 
 /*!
 {
@@ -2085,18 +2208,19 @@ Detects support for the IndexedDB client-side storage API (final spec).
 
 /*!
 {
-  "name": "Background Size",
-  "property": "backgroundsize",
+  "name": "Border Radius",
+  "property": "borderradius",
+  "caniuse": "border-radius",
+  "polyfills": ["css3pie"],
   "tags": ["css"],
-  "knownBugs": ["This will false positive in Opera Mini - http://github.com/Modernizr/Modernizr/issues/396"],
   "notes": [{
-    "name": "Related Issue",
-    "href": "http://github.com/Modernizr/Modernizr/issues/396"
+    "name": "Comprehensive Compat Chart",
+    "href": "http://muddledramblings.com/table-of-css3-border-radius-compliance"
   }]
 }
 !*/
 
-  Modernizr.addTest('backgroundsize', testAllProps('backgroundSize', '100%', true));
+  Modernizr.addTest('borderradius', testAllProps('borderRadius', '0px', true));
 
 /*!
 {
@@ -2123,12 +2247,12 @@ Detects support for the IndexedDB client-side storage API (final spec).
   "warnings": ["Android < 4 will pass this test, but can only animate a single property at a time"],
   "notes": [{
     "name" : "Article: 'Dispelling the Android CSS animation myths'",
-    "href": "http://goo.gl/CHVJm"
+    "href": "http://goo.gl/OGw5Gm"
   }]
 }
 !*/
 /* DOC
-Detects wether or not elements can be animated using CSS
+Detects whether or not elements can be animated using CSS
 */
 
   Modernizr.addTest('cssanimations', testAllProps('animationName', 'a', true));
@@ -2198,7 +2322,12 @@ Detects wether or not elements can be animated using CSS
 }
 !*/
 
-  Modernizr.addTest('csstransforms', testAllProps('transform', 'scale(1)', true));
+  Modernizr.addTest('csstransforms', function() {
+    // Android < 3.0 is buggy, so we sniff and blacklist
+    // http://git.io/hHzL7w
+    return navigator.userAgent.indexOf('Android 2.') === -1 &&
+           testAllProps('transform', 'scale(1)', true);
+  });
 
 /*!
 {
@@ -2221,12 +2350,17 @@ Detects wether or not elements can be animated using CSS
     //   some conditions. As a result, Webkit typically recognizes the syntax but
     //   will sometimes throw a false positive, thus we must do a more thorough check:
     if ( ret && (!usePrefix || 'webkitPerspective' in docElement.style )) {
-
-      // Webkit allows this media query to succeed only if the feature is enabled.
-      // `@media (transform-3d),(-webkit-transform-3d){ ... }`
+      var mq;
+      // Use CSS Conditional Rules if available
+      if (Modernizr.supports) {
+        mq = '@supports (perspective: 1px)';
+      } else {
+        // Otherwise, Webkit allows this media query to succeed only if the feature is enabled.
+        // `@media (transform-3d),(-webkit-transform-3d){ ... }`
+        mq = '@media (transform-3d)';
+        if (usePrefix ) mq += ',(-webkit-transform-3d)';
+      }
       // If loaded inside the body tag and the test element inherits any padding, margin or borders it will fail #740
-      var mq = '@media (transform-3d)';
-      if (usePrefix ) mq += ',(-webkit-transform-3d)';
       mq += '{#modernizr{left:9px;position:absolute;height:5px;margin:0;padding:0;border:0}}';
 
       testStyles(mq, function( elem ) {
@@ -2304,4 +2438,4 @@ Detects support for the Flexible Box Layout model, a.k.a. Flexbox, which allows 
 
 
 
-})(this, document);
+})(window, document);

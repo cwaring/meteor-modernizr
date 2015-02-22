@@ -1,9 +1,0 @@
-{
-  "name": "modernizr",
-  "description": "Modernizr 3.x for Meteor",
-  "homepage": "https://github.com/cwaring/meteor-modernizr.git",
-  "author": "Chris Waring <chris@wwaves.co>",
-  "version": "0.0.2",
-  "git": "https://github.com/cwaring/meteor-modernizr.git",
-  "packages": {}
-}
