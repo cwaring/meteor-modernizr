@@ -1,7 +1,7 @@
 Package.describe({
   name: 'cwaring:modernizr',
   summary: 'Modernizr 3.x packaged for Meteor',
-  version: '3.0.0-pre',
+  version: '3.0.0_1',
   git: 'https://github.com/cwaring/meteor-modernizr',
   documentation: 'README.md'
 });
